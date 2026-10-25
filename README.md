@@ -66,10 +66,14 @@ Pick a power and GitHub opens an issue for you. Hit **Create**, and about a minu
 
 <!-- freethrow:start -->
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="dist/shot-0-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="dist/shot-0-light.svg">
-  <img alt="the last free throw someone took on my profile" src="dist/shot-0-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="dist/shot-1-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="dist/shot-1-light.svg">
+  <img alt="the last free throw someone took on my profile" src="dist/shot-1-light.svg">
 </picture>
 
-No shots yet, be the first.
+1 made out of 1 shot so far, 1 of them a swish.
+
+| shooter | power | result |
+|---|---|---|
+| [zuromu](https://github.com/zuromu) | 7 | swish |
 <!-- freethrow:end -->

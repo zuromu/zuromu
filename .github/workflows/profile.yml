@@ -2,6 +2,7 @@ name: refresh profile
 
 # Once a day: redraws the images in dist/ (the neofetch card, the dribbling
 # ball and the 3D city), updates the devlog list in the README, and commits.
+# Free throws are handled separately, in free-throw.yml.
 # Uses the built-in GITHUB_TOKEN, so there are no secrets to set up.
 
 on:
@@ -54,6 +55,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USER: ${{ github.repository_owner }}
         run: python3 scripts/devlog.py
+
+      - name: Draw the free-throw court, if nobody has shot yet
+        continue-on-error: true
+        run: python3 scripts/freethrow.py render
 
       - name: Draw the 3D city
         continue-on-error: true

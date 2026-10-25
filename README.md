@@ -57,3 +57,19 @@ Notes I write after finishing each milestone.
   <img alt="my contributions as a 3D city" src="dist/city-light.svg" width="100%">
 </picture>
 </details>
+
+## take a free throw
+
+Pick a power and GitHub opens an issue for you. Hit **Create**, and about a minute later a workflow takes your shot with real physics and replies with how it went.
+
+[<kbd> 1 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+1&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 2 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+2&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 3 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+3&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 4 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+4&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 5 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+5&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 6 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+6&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 7 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+7&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 8 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+8&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 9 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+9&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.) [<kbd> 10 </kbd>](https://github.com/zuromu/zuromu/issues/new?title=shoot+10&body=Hit+Create+below.+Your+shot+gets+taken+in+about+a+minute+and+the+result+shows+up+here.)
+
+<!-- freethrow:start -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="dist/shot-0-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="dist/shot-0-light.svg">
+  <img alt="the last free throw someone took on my profile" src="dist/shot-0-light.svg">
+</picture>
+
+No shots yet, be the first.
+<!-- freethrow:end -->

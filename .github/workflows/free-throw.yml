@@ -1,0 +1,62 @@
+name: free throw
+
+# Someone opens an issue titled "shoot 7" from the buttons in my README.
+# This takes the shot with scripts/freethrow.py, updates the scoreboard,
+# replies on the issue and closes it. Any other issue is left alone.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  shoot:
+    if: startsWith(github.event.issue.title, 'shoot')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Take the shot and push the scoreboard
+        env:
+          # the title is typed by whoever opened the issue, so it only ever goes in
+          # through an env var, and the script checks it's exactly "shoot <1 to 10>"
+          TITLE: ${{ github.event.issue.title }}
+          SHOOTER: ${{ github.event.issue.user.login }}
+          ISSUE: ${{ github.event.issue.number }}
+          REPLY_FILE: ${{ runner.temp }}/reply.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # if someone else's shot (or the nightly refresh) pushed first, start over
+          # from the newest version and take the same shot again. it comes out
+          # identical because the wobble is seeded with the issue number
+          done=0
+          for attempt in 1 2 3 4 5; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            python3 scripts/freethrow.py shoot
+            git add -A data dist README.md
+            if git diff --quiet --staged; then done=1; break; fi
+            git commit -q -m "chore: free throw #$ISSUE"
+            if git push -q origin HEAD:main; then done=1; break; fi
+            sleep $((attempt * 3))
+          done
+          test "$done" = 1
+
+      - name: Reply and close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+          REPLY_FILE: ${{ runner.temp }}/reply.md
+        run: |
+          if [ ! -f "$REPLY_FILE" ]; then echo "not a shot, nothing to reply"; exit 0; fi
+          gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" --body-file "$REPLY_FILE"
+          gh issue close "$ISSUE" --repo "$GITHUB_REPOSITORY"

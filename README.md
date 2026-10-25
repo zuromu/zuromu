@@ -26,7 +26,7 @@ CS student at Universitas Indonesia (international program), from Jakarta. This 
 
 **[Cesium Guard](https://github.com/zuromu/cesium-guard-mvp)** is what my team made for the RISTEK Mini Hackathon 2025. It's a dashboard for tracking radioactive contamination in shrimp exports, built with React and Flask.
 
-**[Wanderer's Koperasi Quest](https://github.com/zuromu/Wanderers-Koperasi)** is a small browser RPG about how koperasi (cooperatives) work. Made with friends in Phaser.
+**[Wanderer's Koperasi Quest](https://github.com/zuromu/Wanderers-Koperasi)** is a small browser RPG about how koperasi (cooperatives) work. Made with friends in Phaser, and you can [play it in your browser](https://wanderers-koperasi.vercel.app/).
 
 ## devlog
 

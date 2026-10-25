@@ -155,6 +155,10 @@ query($login: String!, $after: String) {
     id
     followers { totalCount }
     contributionsCollection { contributionCalendar { totalContributions } }
+    recent: repositories(ownerAffiliations: OWNER, isFork: false, privacy: PUBLIC, first: 5,
+                         orderBy: {field: PUSHED_AT, direction: DESC}) {
+      nodes { name pushedAt }
+    }
     repositories(ownerAffiliations: OWNER, isFork: false, first: 100, after: $after) {
       totalCount
       pageInfo { hasNextPage endCursor }
@@ -201,6 +205,9 @@ def fetch_stats(token: str) -> dict:
 
     contributed = [r["nameWithOwner"] for r in user["repositoriesContributedTo"]["nodes"]]
 
+    # the last project I pushed to, skipping this profile repo (the workflow pushes here every night)
+    last_push = next((r for r in user["recent"]["nodes"] if r["name"].lower() != USERNAME.lower()), None)
+
     # commits and lines of code on the default branch of every repo I own or
     # helped with. counts everything (lock files too), so it's a vanity number
     commits = additions = deletions = 0
@@ -230,6 +237,7 @@ def fetch_stats(token: str) -> dict:
         "stars": stars,
         "followers": user["followers"]["totalCount"],
         "contributions": user["contributionsCollection"]["contributionCalendar"]["totalContributions"],
+        "last_push": last_push,
         "commits": commits,
         "additions": additions,
         "deletions": deletions,
@@ -237,6 +245,7 @@ def fetch_stats(token: str) -> dict:
 
 
 DEMO_STATS = {"repos": 5, "contributed": 3, "stars": 4, "followers": 6, "contributions": 412,
+              "last_push": {"name": "swish-rl", "pushedAt": "2026-10-24T19:26:55Z"},
               "commits": 274, "additions": 51382, "deletions": 9147}
 
 # ---------------------------------------------------------------------------
@@ -286,6 +295,13 @@ def section(title: str) -> list[tuple[str, str]]:
     return [("- ", "d"), (title, "w"), (" " + "-" * (LINE_CHARS - len(title) - 3), "d")]
 
 
+def last_push_text(push: dict | None) -> str:
+    if not push:
+        return "-"
+    when = datetime.fromisoformat(push["pushedAt"].replace("Z", "+00:00")).astimezone(ZoneInfo(TIMEZONE))
+    return f"{push['name']}, {when:%b} {when.day}"
+
+
 def card_lines(stats: dict, today: date) -> list[list[tuple[str, str]] | str]:
     computed = {"Uptime": uptime(today), "Kernel": semester(today)}
     lines: list[list[tuple[str, str]] | str] = [
@@ -307,12 +323,14 @@ def card_lines(stats: dict, today: date) -> list[list[tuple[str, str]] | str]:
         # before the first real run: dashes, so no made up numbers ever go public
         lines.append(leader("Repos", "-", left) + [(" | ", "d")] + leader("Commits", "-", right))
         lines.append(leader("Contributions", "-", LINE_CHARS))
+        lines.append(leader("Last Push", "-", LINE_CHARS))
         if SHOW_LINES_OF_CODE:
             lines.append(leader("Lines of Code", "-", LINE_CHARS))
     else:
         lines.append(leader("Repos", f"{s['repos']} {{Contributed: {s['contributed']}}}", left)
                      + [(" | ", "d")] + leader("Commits", f"{s['commits']:,}", right))
         lines.append(leader("Contributions", f"{s['contributions']:,} in the last year", LINE_CHARS))
+        lines.append(leader("Last Push", last_push_text(s.get("last_push")), LINE_CHARS))
         if SHOW_LINES_OF_CODE:
             loc = s["additions"] - s["deletions"]
             adds, dels = f"{s['additions']:,}++", f"{s['deletions']:,}--"

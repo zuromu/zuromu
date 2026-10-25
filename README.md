@@ -5,6 +5,7 @@
   (the neofetch card, the dribbling ball and the 3D city).
   to change what the card says, edit the lists at the top of scripts/neofetch.py.
   to add a project, copy one of the project paragraphs below.
+  the devlog list fills itself in from scripts/devlog.py, so don't edit between its markers.
 -->
 
 <p align="center">
@@ -26,6 +27,14 @@ CS student at Universitas Indonesia (international program), from Jakarta. This 
 **[Cesium Guard](https://github.com/zuromu/cesium-guard-mvp)** is what my team made for the RISTEK Mini Hackathon 2025. It's a dashboard for tracking radioactive contamination in shrimp exports, built with React and Flask.
 
 **[Wanderer's Koperasi Quest](https://github.com/zuromu/Wanderers-Koperasi)** is a small browser RPG about how koperasi (cooperatives) work. Made with friends in Phaser.
+
+## devlog
+
+Notes I write after finishing each milestone.
+
+<!-- devlog:start -->
+- [M1: Physics sandbox](https://github.com/zuromu/swish-rl/blob/main/docs/devlog/m1-physics-sandbox.md) in swish-rl, Oct 25, 2026
+<!-- devlog:end -->
 
 ## stack
 

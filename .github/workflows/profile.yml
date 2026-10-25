@@ -1,0 +1,75 @@
+name: refresh profile
+
+# Redraws the images in dist/ once a day and commits them:
+# the neofetch card, the dribbling ball, and the 3D city.
+# Uses the built-in GITHUB_TOKEN, so there are no secrets to set up.
+
+on:
+  schedule:
+    - cron: "17 21 * * *" # 21:17 UTC is 04:17 in Jakarta
+  workflow_dispatch: # adds the "Run workflow" button in the Actions tab
+  push:
+    branches: [main]
+    paths:
+      - scripts/**
+      - .github/workflows/profile.yml
+
+permissions:
+  contents: write
+
+# never run two at once, they'd fight over the push
+concurrency:
+  group: refresh-profile
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Draw the neofetch card
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.repository_owner }}
+        run: python3 scripts/neofetch.py
+
+      # if one of these breaks someday, the rest still runs and the card still gets committed
+
+      - name: Draw the dribbling ball
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER: ${{ github.repository_owner }}
+        run: python3 scripts/dribble.py
+
+      - name: Draw the 3D city
+        continue-on-error: true
+        uses: yoshi389111/github-profile-3d-contrib@v0.9.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ github.repository_owner }}
+          SETTING_JSON: scripts/city-colors.json
+
+      - name: Commit the new images
+        run: |
+          # the city action always writes into profile-3d-contrib/, so move it into dist/
+          if [ -d profile-3d-contrib ]; then
+            mv profile-3d-contrib/city-*.svg dist/ 2>/dev/null || true
+            rm -rf profile-3d-contrib
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist
+          if git diff --quiet --staged; then
+            echo "nothing changed"
+            exit 0
+          fi
+          git commit -m "chore: refresh profile images"
+          git pull --rebase
+          git push

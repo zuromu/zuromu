@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="588" viewBox="0 0 960 588" role="img" aria-labelledby="card-title">
 <title id="card-title">ahmad@zuromu running neofetch</title>
-<!-- last drawn 2026-10-25 19:56 WIB -->
+<!-- last drawn 2026-10-25 21:45 WIB -->
 <style>
 text { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace; white-space: pre; }
 .t { font-size: 15px; }
@@ -145,9 +145,9 @@ text { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Cons
 <text class="t show" x="392" y="362" style="animation-delay:1.59s"><tspan class="k">Working on</tspan><tspan class="w">:</tspan><tspan class="d"> .......... </tspan><tspan class="v">swish-rl, a basketball game with RL</tspan></text>
 <text class="t show" x="392" y="382" style="animation-delay:1.62s"><tspan class="k">Hobbies</tspan><tspan class="w">:</tspan><tspan class="d"> .............................. </tspan><tspan class="v">playing basketball</tspan></text>
 <text class="t show" x="392" y="422" style="animation-delay:1.68s"><tspan class="d">- </tspan><tspan class="w">GitHub Stats</tspan><tspan class="d"> -------------------------------------------</tspan></text>
-<text class="t show" x="392" y="442" style="animation-delay:1.71s"><tspan class="k">Repos</tspan><tspan class="w">:</tspan><tspan class="d"> ........ </tspan><tspan class="v">6 {Contributed: 1}</tspan><tspan class="d"> | </tspan><tspan class="k">Commits</tspan><tspan class="w">:</tspan><tspan class="d"> ........ </tspan><tspan class="v">286</tspan></text>
-<text class="t show" x="392" y="462" style="animation-delay:1.74s"><tspan class="k">Contributions</tspan><tspan class="w">:</tspan><tspan class="d"> ...................... </tspan><tspan class="v">687 in the last year</tspan></text>
-<text class="t show" x="392" y="482" style="animation-delay:1.77s"><tspan class="k">Lines of Code</tspan><tspan class="w">:</tspan><tspan class="d"> .............. </tspan><tspan class="v">19,108</tspan><tspan class="w"> ( </tspan><tspan class="add">22,669++</tspan><tspan class="w">, </tspan><tspan class="del">3,561--</tspan><tspan class="w"> )</tspan></text>
+<text class="t show" x="392" y="442" style="animation-delay:1.71s"><tspan class="k">Repos</tspan><tspan class="w">:</tspan><tspan class="d"> ........ </tspan><tspan class="v">6 {Contributed: 1}</tspan><tspan class="d"> | </tspan><tspan class="k">Commits</tspan><tspan class="w">:</tspan><tspan class="d"> ........ </tspan><tspan class="v">284</tspan></text>
+<text class="t show" x="392" y="462" style="animation-delay:1.74s"><tspan class="k">Contributions</tspan><tspan class="w">:</tspan><tspan class="d"> ...................... </tspan><tspan class="v">685 in the last year</tspan></text>
+<text class="t show" x="392" y="482" style="animation-delay:1.77s"><tspan class="k">Lines of Code</tspan><tspan class="w">:</tspan><tspan class="d"> .............. </tspan><tspan class="v">19,168</tspan><tspan class="w"> ( </tspan><tspan class="add">22,566++</tspan><tspan class="w">, </tspan><tspan class="del">3,398--</tspan><tspan class="w"> )</tspan></text>
 <g class="show" style="animation-delay:1.83s">
 <rect x="392" y="510" width="26" height="14" rx="2" fill="#484f58"/>
 <rect x="422" y="510" width="26" height="14" rx="2" fill="#ff7b72"/>

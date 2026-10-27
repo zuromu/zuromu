@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="608" viewBox="0 0 960 608" role="img" aria-labelledby="card-title">
 <title id="card-title">ahmad@zuromu running neofetch</title>
-<!-- last drawn 2026-10-26 06:19 WIB -->
+<!-- last drawn 2026-10-27 07:29 WIB -->
 <style>
 text { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace; white-space: pre; }
 .t { font-size: 15px; }
@@ -134,7 +134,7 @@ text { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Cons
 <text class="t show" x="392" y="102" style="animation-delay:1.20s"><tspan class="k">ahmad</tspan><tspan class="w">@</tspan><tspan class="k">zuromu</tspan></text>
 <text class="t show" x="392" y="122" style="animation-delay:1.23s"><tspan class="d">----------------------------------------------------------</tspan></text>
 <text class="t show" x="392" y="142" style="animation-delay:1.26s"><tspan class="k">OS</tspan><tspan class="w">:</tspan><tspan class="d"> ............................... </tspan><tspan class="v">macOS on a MacBook Pro</tspan></text>
-<text class="t show" x="392" y="162" style="animation-delay:1.29s"><tspan class="k">Uptime</tspan><tspan class="w">:</tspan><tspan class="d"> ....................... </tspan><tspan class="v">19 years, 2 months, 3 days</tspan></text>
+<text class="t show" x="392" y="162" style="animation-delay:1.29s"><tspan class="k">Uptime</tspan><tspan class="w">:</tspan><tspan class="d"> ....................... </tspan><tspan class="v">19 years, 2 months, 4 days</tspan></text>
 <text class="t show" x="392" y="182" style="animation-delay:1.32s"><tspan class="k">Host</tspan><tspan class="w">:</tspan><tspan class="d"> ............... </tspan><tspan class="v">Universitas Indonesia (intl program)</tspan></text>
 <text class="t show" x="392" y="202" style="animation-delay:1.35s"><tspan class="k">Kernel</tspan><tspan class="w">:</tspan><tspan class="d"> ..................... </tspan><tspan class="v">Computer Science, semester 3</tspan></text>
 <text class="t show" x="392" y="222" style="animation-delay:1.38s"><tspan class="k">Shell</tspan><tspan class="w">:</tspan><tspan class="d"> ............................................... </tspan><tspan class="v">zsh</tspan></text>

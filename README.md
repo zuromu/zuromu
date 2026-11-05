@@ -22,11 +22,21 @@ CS student at Universitas Indonesia (international program), from Jakarta. This 
 
 ## projects
 
+<!-- projects:start -->
 **[swish-rl](https://github.com/zuromu/swish-rl)** is a 2D basketball game where an AI is supposed to learn how to shoot using reinforcement learning. Still very early, right now it's a ball that falls and bounces.
 
 **[Cesium Guard](https://github.com/zuromu/cesium-guard-mvp)** is what my team made for the RISTEK Mini Hackathon 2025. It's a dashboard for tracking radioactive contamination in shrimp exports, built with React and Flask.
 
 **[Wanderer's Koperasi Quest](https://github.com/zuromu/Wanderers-Koperasi)** is a small browser RPG about how koperasi (cooperatives) work. Made with friends in Phaser, and you can [play it in your browser](https://wanderers-koperasi.vercel.app/).
+
+**[Dropdone](https://github.com/zuromu/dropdone)** is a tiny checklist that lives in the Mac menu bar. Click the icon, check things off, get back to work. Written in Swift.
+
+**[Sceleton](https://github.com/zuromu/sceleton)** is a browser extension for Edge and Chrome that makes SCeLE (Fasilkom UI's Moodle) actually tell you what's due, with deadline reminders and alerts when a lecturer uploads something.
+
+**[tiny-agent](https://github.com/zuromu/tiny-agent)** is a small AI agent I wrote in Python to understand how tools like Claude Code work. It's one file, about 170 lines, and a model runs in a loop with three tools: list files, read a file and run a shell command.
+
+**[PlatformBasedDevelopment](https://github.com/zuromu/PlatformBasedDevelopment)** is my personal portfolio site for the Platform-Based Development course, made with Django and [deployed on PWS](https://ahmad-hoesin-myportofolio.pws.cs.ui.ac.id).
+<!-- projects:end -->
 
 ## devlog
 

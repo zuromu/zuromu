@@ -36,6 +36,8 @@ CS student at Universitas Indonesia (international program), from Jakarta. This 
 **[tiny-agent](https://github.com/zuromu/tiny-agent)** is a small AI agent I wrote in Python to understand how tools like Claude Code work. It's one file, about 170 lines, and a model runs in a loop with three tools: list files, read a file and run a shell command.
 
 **[PlatformBasedDevelopment](https://github.com/zuromu/PlatformBasedDevelopment)** is my personal portfolio site for the Platform-Based Development course, made with Django and [deployed on PWS](https://ahmad-hoesin-myportofolio.pws.cs.ui.ac.id).
+
+**[myportofolio_mobile](https://github.com/zuromu/myportofolio_mobile)** is the mobile version of that portfolio, written in Flutter for the same course. So far it's a home page with a few info cards and a menu grid.
 <!-- projects:end -->
 
 ## devlog

@@ -417,7 +417,7 @@ def shoot() -> None:
     now = datetime.now(timezone.utc)
     mine = [s for s in data["shots"] if s["shooter"] == shooter and s["issue"] != issue]
     if mine and (now - datetime.fromisoformat(mine[-1]["at"].replace("Z", "+00:00"))).total_seconds() < COOLDOWN:
-        reply("One shot at a time, give it a minute and try again.")
+        reply(f"One shot at a time, give it {COOLDOWN} seconds and try again.")
         return
     if any(s["issue"] == issue for s in data["shots"]):  # already counted, e.g. on a re-run
         entry = next(s for s in data["shots"] if s["issue"] == issue)

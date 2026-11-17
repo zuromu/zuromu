@@ -34,6 +34,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check the scripts compile
+        run: python3 -m compileall -q scripts
+
       - name: Draw the neofetch card
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

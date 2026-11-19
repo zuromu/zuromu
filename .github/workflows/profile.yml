@@ -86,5 +86,11 @@ jobs:
             exit 0
           fi
           git commit -m "chore: refresh profile"
-          git pull --rebase
-          git push
+          # a free throw may push while this runs, so rebase onto the newest main and retry
+          pushed=0
+          for attempt in 1 2 3; do
+            git pull -q --rebase origin main
+            if git push -q origin HEAD:main; then pushed=1; break; fi
+            sleep $((attempt * 3))
+          done
+          test "$pushed" = 1

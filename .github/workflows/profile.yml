@@ -13,6 +13,7 @@ on:
     branches: [main]
     paths:
       - scripts/**
+      - tests/**
       - .github/workflows/profile.yml
 
 permissions:
@@ -36,6 +37,9 @@ jobs:
 
       - name: Check the scripts compile
         run: python3 -m compileall -q scripts
+
+      - name: Run the script tests
+        run: python3 -m unittest discover -s tests
 
       - name: Draw the neofetch card
         env:

@@ -233,6 +233,25 @@ class ShootFlowTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             freethrow.update_readme("block")
 
+    def test_rerun_after_later_shot_skips_cooldown(self) -> None:
+        self.run_shoot("shoot 7", "alice", 1)
+        saved = json.loads(self.data_file.read_text(encoding="utf-8"))
+        old_time = (datetime.now(timezone.utc) - timedelta(seconds=freethrow.COOLDOWN + 5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        saved["shots"][0]["at"] = old_time
+        self.data_file.write_text(json.dumps(saved), encoding="utf-8")
+
+        self.run_shoot("shoot 5", "alice", 2)
+        before_data = self.data_file.read_text(encoding="utf-8")
+
+        # re-running issue 1 right after alice's shot 2 must still return issue 1's result
+        rerun_reply = self.run_shoot("shoot 7", "alice", 1)
+        self.assertIsNotNone(rerun_reply)
+        self.assertNotIn("One shot at a time", rerun_reply)
+        self.assertIn("Power 7", rerun_reply)
+        self.assertIn("out of 2", rerun_reply)
+        self.assertEqual(self.data_file.read_text(encoding="utf-8"), before_data)
+        self.assertTrue((self.dist_dir / "shot-2-dark.svg").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

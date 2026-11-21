@@ -414,14 +414,15 @@ def shoot() -> None:
         return
 
     data = load()
-    now = datetime.now(timezone.utc)
-    mine = [s for s in data["shots"] if s["shooter"] == shooter and s["issue"] != issue]
-    if mine and (now - datetime.fromisoformat(mine[-1]["at"].replace("Z", "+00:00"))).total_seconds() < COOLDOWN:
-        reply(f"One shot at a time, give it {COOLDOWN} seconds and try again.")
-        return
-    if any(s["issue"] == issue for s in data["shots"]):  # already counted, e.g. on a re-run
-        entry = next(s for s in data["shots"] if s["issue"] == issue)
+    existing = next((s for s in data["shots"] if s["issue"] == issue), None)
+    if existing is not None:  # already counted, e.g. on a re-run
+        entry = existing
     else:
+        now = datetime.now(timezone.utc)
+        mine = [s for s in data["shots"] if s["shooter"] == shooter]
+        if mine and (now - datetime.fromisoformat(mine[-1]["at"].replace("Z", "+00:00"))).total_seconds() < COOLDOWN:
+            reply(f"One shot at a time, give it {COOLDOWN} seconds and try again.")
+            return
         shot = simulate(power, issue)
         entry = {"issue": issue, "shooter": shooter, "power": power, "result": shot.result,
                  "at": now.strftime("%Y-%m-%dT%H:%M:%SZ")}

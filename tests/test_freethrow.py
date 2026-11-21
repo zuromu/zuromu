@@ -48,8 +48,34 @@ class SimulateTests(unittest.TestCase):
         self.assertEqual(times, sorted(times))
         self.assertAlmostEqual(shot.end, times[-1])
 
+    def test_every_power_ends_in_a_known_result(self) -> None:
+        for power in range(1, 11):
+            for seed in range(1, 4):
+                shot = freethrow.simulate(power, seed)
+                self.assertIn(shot.result, freethrow.RESULTS)
+                made = freethrow.RESULTS[shot.result][0]
+                self.assertEqual(shot.made_at is not None, made, (power, seed, shot.result))
+
+    def test_misses_and_makes_are_told_apart(self) -> None:
+        cases = [(5, 1, "front"), (5, 5, "short"), (6, 1, "rattle"), (7, 2, "rattle"),
+                 (8, 1, "back"), (8, 2, "board"), (9, 1, "board"), (10, 1, "long")]
+        for power, seed, result in cases:
+            self.assertEqual(freethrow.simulate(power, seed).result, result, (power, seed))
+
 
 class SvgAndScoreboardTests(unittest.TestCase):
+    def test_build_svg_shows_the_word_for_each_kind_of_result(self) -> None:
+        theme = freethrow.THEMES["dark"]
+        for power, seed in [(1, 1), (5, 1), (6, 1), (7, 1), (7, 2), (8, 1), (8, 2), (10, 1)]:
+            shot = freethrow.simulate(power, seed)
+            svg = freethrow.build_svg(theme, shot, "x")
+            ET.fromstring(svg)
+            self.assertIn(f">{freethrow.RESULTS[shot.result][1]}</text>", svg)
+
+    def test_caption_for_entry_and_empty(self) -> None:
+        self.assertEqual(freethrow.caption_for(None), "no shots yet, be the first")
+        self.assertEqual(freethrow.caption_for({"shooter": "alice", "power": 4}), "alice took a 4")
+
     def test_build_svg_valid_xml_idle_and_shot(self) -> None:
         shot = freethrow.simulate(7, 1)
         for theme in freethrow.THEMES.values():
@@ -168,6 +194,39 @@ class ShootFlowTests(unittest.TestCase):
         self.assertIn("out of 2", second_reply)
         self.assertFalse((self.dist_dir / "shot-1-dark.svg").exists())
         self.assertTrue((self.dist_dir / "shot-2-dark.svg").exists())
+
+    def test_title_is_read_loosely_and_bot_shooters_are_allowed(self) -> None:
+        reply = self.run_shoot("  Shoot   07 ", "dependabot[bot]", 1)
+        self.assertIn("Power 7", reply)
+        saved = json.loads(self.data_file.read_text())["shots"]
+        self.assertEqual([(s["shooter"], s["power"]) for s in saved], [("dependabot[bot]", 7)])
+
+    def test_cooldown_only_applies_to_the_same_shooter(self) -> None:
+        self.run_shoot("shoot 7", "alice", 1)
+        reply = self.run_shoot("shoot 7", "bob", 2)
+        self.assertNotIn("One shot at a time", reply)
+        self.assertIn("out of 2", reply)
+
+    def test_load_without_a_data_file_starts_empty(self) -> None:
+        self.assertEqual(freethrow.load(), {"shots": []})
+
+    def test_draw_only_removes_old_shot_pictures(self) -> None:
+        self.dist_dir.mkdir()
+        (self.dist_dir / "shot-9-dark.svg").write_text("old", encoding="utf-8")
+        (self.dist_dir / "city-dark.svg").write_text("keep", encoding="utf-8")
+        freethrow.draw({"shots": []})
+        self.assertFalse((self.dist_dir / "shot-9-dark.svg").exists())
+        self.assertTrue((self.dist_dir / "city-dark.svg").exists())
+        self.assertTrue((self.dist_dir / "shot-0-dark.svg").exists())
+        self.assertTrue((self.dist_dir / "shot-0-light.svg").exists())
+
+    def test_render_command_draws_once(self) -> None:
+        with mock.patch.object(sys, "argv", ["freethrow.py", "render"]), \
+             contextlib.redirect_stdout(io.StringIO()) as out:
+            freethrow.main()
+            freethrow.main()
+        self.assertEqual(out.getvalue().count("drew the court"), 1)
+        self.assertTrue((self.dist_dir / "shot-0-dark.svg").exists())
 
     def test_update_readme_exits_when_markers_missing(self) -> None:
         self.readme.write_text("no markers here\n", encoding="utf-8")

@@ -82,6 +82,36 @@ class GraphqlTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 github_api.graphql("q", {}, "tok")
 
+    def test_allows_not_found_errors_when_opted_in(self) -> None:
+        payload = {
+            "data": {"repository": None},
+            "errors": [{"type": "NOT_FOUND", "path": ["repository"], "message": "Could not resolve"}],
+        }
+        with mock.patch("urllib.request.urlopen", return_value=FakeResponse(payload)):
+            result = github_api.graphql("q", {}, "tok", allow_not_found=True)
+        self.assertEqual(result, {"repository": None})
+
+        with mock.patch("urllib.request.urlopen", return_value=FakeResponse(payload)):
+            with self.assertRaises(RuntimeError):
+                github_api.graphql("q", {}, "tok")
+
+    def test_raises_on_mixed_errors_or_null_data_even_with_allow_not_found(self) -> None:
+        mixed = {
+            "data": {"repository": None},
+            "errors": [{"type": "NOT_FOUND"}, {"type": "RATE_LIMITED"}],
+        }
+        with mock.patch("urllib.request.urlopen", return_value=FakeResponse(mixed)):
+            with self.assertRaises(RuntimeError):
+                github_api.graphql("q", {}, "tok", allow_not_found=True)
+
+        null_data = {
+            "data": None,
+            "errors": [{"type": "NOT_FOUND"}],
+        }
+        with mock.patch("urllib.request.urlopen", return_value=FakeResponse(null_data)):
+            with self.assertRaises(RuntimeError):
+                github_api.graphql("q", {}, "tok", allow_not_found=True)
+
 
 if __name__ == "__main__":
     unittest.main()

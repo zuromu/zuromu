@@ -216,7 +216,8 @@ def fetch_stats(token: str) -> dict:
         after = None
         while True:
             data = graphql(HISTORY_QUERY, {"owner": owner, "name": name,
-                                           "author": user["id"], "after": after}, token)
+                                           "author": user["id"], "after": after},
+                           token, allow_not_found=True)
             repo = data["repository"]
             if repo is None or repo["defaultBranchRef"] is None:  # gone, private, or empty
                 break

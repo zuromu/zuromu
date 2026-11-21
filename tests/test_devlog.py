@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import io
+import json
 import sys
 import tempfile
 import unittest
@@ -107,6 +109,62 @@ class DevlogIoTests(unittest.TestCase):
             "repo": "swish-rl",
             "date": "2026-10-25T10:00:00Z",
         }])
+
+    def test_fetch_posts_skips_private_or_missing_repo(self) -> None:
+        class FakeResponse:
+            def __init__(self, payload: dict) -> None:
+                self.raw = io.BytesIO(json.dumps(payload).encode())
+
+            def read(self) -> bytes:
+                return self.raw.read()
+
+            def __enter__(self) -> FakeResponse:
+                return self
+
+            def __exit__(self, *args) -> None:
+                return None
+
+        payloads = [
+            {
+                "data": {"repository": None},
+                "errors": [{"type": "NOT_FOUND", "path": ["repository"], "message": "Could not resolve"}],
+            },
+            {
+                "data": {
+                    "repository": {
+                        "url": "https://github.com/zuromu/swish-rl",
+                        "defaultBranchRef": {"name": "main"},
+                        "object": {
+                            "entries": [
+                                {"name": "m1.md", "object": {"text": "# M1: Physics\n"}},
+                            ]
+                        },
+                    }
+                }
+            },
+            {
+                "data": {
+                    "repository": {
+                        "defaultBranchRef": {
+                            "target": {
+                                "history": {
+                                    "nodes": [{"committedDate": "2026-10-25T10:00:00Z"}]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        ]
+
+        sources = [("private-repo", "docs/devlog"), ("swish-rl", "docs/devlog")]
+        with mock.patch.object(devlog, "SOURCES", sources), \
+             mock.patch("urllib.request.urlopen", side_effect=[FakeResponse(p) for p in payloads]):
+            posts = devlog.fetch_posts("tok")
+
+        self.assertEqual(len(posts), 1)
+        self.assertEqual(posts[0]["repo"], "swish-rl")
+        self.assertEqual(posts[0]["title"], "M1: Physics")
 
 
 if __name__ == "__main__":

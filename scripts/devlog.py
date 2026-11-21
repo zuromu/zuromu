@@ -64,7 +64,8 @@ def title_of(text: str, filename: str) -> str:
 def fetch_posts(token: str) -> list[dict]:
     posts = []
     for repo, folder in SOURCES:
-        data = graphql(FOLDER_QUERY, {"owner": USERNAME, "name": repo, "expr": f"HEAD:{folder}"}, token)
+        data = graphql(FOLDER_QUERY, {"owner": USERNAME, "name": repo, "expr": f"HEAD:{folder}"},
+                       token, allow_not_found=True)
         repository = data["repository"]
         if not repository or not repository["object"]:  # repo is private or gone, or no devlog yet
             continue

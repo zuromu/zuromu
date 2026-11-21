@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import io
+import json
 import sys
 import unittest
 import xml.etree.ElementTree as ET
@@ -176,6 +178,69 @@ class FetchStatsTests(unittest.TestCase):
         self.assertEqual(stats["additions"], 150)
         self.assertEqual(stats["deletions"], 25)
         self.assertEqual(stats["last_push"]["name"], "dropdone")
+
+    def test_fetch_stats_skips_not_found_repo_history(self) -> None:
+        class FakeResponse:
+            def __init__(self, payload: dict) -> None:
+                self.raw = io.BytesIO(json.dumps(payload).encode())
+
+            def read(self) -> bytes:
+                return self.raw.read()
+
+            def __enter__(self) -> FakeResponse:
+                return self
+
+            def __exit__(self, *args) -> None:
+                return None
+
+        payloads = [
+            {
+                "data": {
+                    "user": {
+                        "id": "U_1",
+                        "followers": {"totalCount": 3},
+                        "contributionsCollection": {"contributionCalendar": {"totalContributions": 50}},
+                        "recent": {"nodes": [{"name": "dropdone", "pushedAt": "2026-11-19T12:00:00Z"}]},
+                        "repositories": {
+                            "totalCount": 1,
+                            "pageInfo": {"hasNextPage": False, "endCursor": None},
+                            "nodes": [{"nameWithOwner": "zuromu/dropdone", "stargazerCount": 2}],
+                        },
+                        "repositoriesContributedTo": {
+                            "totalCount": 1,
+                            "nodes": [{"nameWithOwner": "friend/gone-repo"}],
+                        },
+                    }
+                }
+            },
+            {
+                "data": {
+                    "repository": {
+                        "defaultBranchRef": {
+                            "target": {
+                                "history": {
+                                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                                    "nodes": [
+                                        {"additions": 40, "deletions": 10, "parents": {"totalCount": 1}},
+                                    ],
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "data": {"repository": None},
+                "errors": [{"type": "NOT_FOUND", "path": ["repository"], "message": "Could not resolve"}],
+            },
+        ]
+
+        with mock.patch("urllib.request.urlopen", side_effect=[FakeResponse(p) for p in payloads]):
+            stats = neofetch.fetch_stats("tok")
+
+        self.assertEqual(stats["commits"], 1)
+        self.assertEqual(stats["additions"], 40)
+        self.assertEqual(stats["deletions"], 10)
 
 
 if __name__ == "__main__":

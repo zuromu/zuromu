@@ -54,9 +54,27 @@ class TextHelperTests(unittest.TestCase):
 
     def test_last_push_text_converts_to_jakarta_time(self) -> None:
         self.assertEqual(neofetch.last_push_text(None), "-")
+        self.assertEqual(neofetch.last_push_text({"name": "empty", "pushedAt": None}), "-")
         # 19:26 UTC on Oct 24 is 02:26 WIB on Oct 25
         push = {"name": "swish-rl", "pushedAt": "2026-10-24T19:26:55Z"}
         self.assertEqual(neofetch.last_push_text(push), "swish-rl, Oct 25")
+
+    def test_last_push_text_truncates_long_repo_names(self) -> None:
+        exact_fit = {"name": "a" * 36, "pushedAt": "2026-11-20T00:00:00Z"}
+        self.assertEqual(neofetch.last_push_text(exact_fit), f"{'a' * 36}, Nov 20")
+
+        too_long = {"name": "platform-based-development-assignment", "pushedAt": "2026-11-20T00:00:00Z"}
+        text = neofetch.last_push_text(too_long)
+        self.assertTrue(text.endswith("..., Nov 20"))
+        rendered = "".join(t for t, _ in neofetch.leader("Last Push", text, neofetch.LINE_CHARS))
+        self.assertEqual(len(rendered), neofetch.LINE_CHARS)
+
+        lines = neofetch.card_lines({**neofetch.DEMO_STATS, "last_push": too_long}, date(2026, 11, 21))
+        last_push_line = next(
+            "".join(t for t, _ in line) for line in lines
+            if isinstance(line, list) and line and line[0][0] == "Last Push"
+        )
+        self.assertEqual(len(last_push_line), neofetch.LINE_CHARS)
 
 
 class CardAndSvgTests(unittest.TestCase):
@@ -91,6 +109,32 @@ class CardAndSvgTests(unittest.TestCase):
 
 
 class FetchStatsTests(unittest.TestCase):
+    def test_fetch_stats_skips_unpushed_recent_repo(self) -> None:
+        response = {
+            "user": {
+                "id": "U_1",
+                "followers": {"totalCount": 1},
+                "contributionsCollection": {"contributionCalendar": {"totalContributions": 10}},
+                "recent": {"nodes": [
+                    {"name": "zuromu", "pushedAt": "2026-11-20T00:00:00Z"},
+                    {"name": "brand-new-empty", "pushedAt": None},
+                    {"name": "dropdone", "pushedAt": "2026-11-19T12:00:00Z"},
+                ]},
+                "repositories": {
+                    "totalCount": 0,
+                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                    "nodes": [],
+                },
+                "repositoriesContributedTo": {
+                    "totalCount": 0,
+                    "nodes": [],
+                },
+            }
+        }
+        with mock.patch.object(neofetch, "graphql", return_value=response):
+            stats = neofetch.fetch_stats("tok")
+        self.assertEqual(stats["last_push"]["name"], "dropdone")
+
     def test_fetch_stats_paginates_skips_merges_and_profile_repo(self) -> None:
         responses = [
             {

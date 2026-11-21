@@ -28,6 +28,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data" / "free-throws.json"
@@ -90,6 +91,8 @@ class Shot:
 
 
 def simulate(power: int, seed: int | None) -> Shot:
+    if not 1 <= power <= len(SPEEDS):
+        raise ValueError(f"power must be between 1 and {len(SPEEDS)}")
     rng = random.Random(seed)
     speed = SPEEDS[power - 1] * (1 + rng.gauss(0, WOBBLE_SPEED))
     angle = ANGLE + rng.gauss(0, WOBBLE_ANGLE)
@@ -308,7 +311,7 @@ def build_svg(theme: dict, shot: Shot | None, caption: str) -> str:
                  f'style="fill:{color};font-size:22px;font-weight:600">{word}</text>')
 
     body.append(label)
-    body.append(f'<text x="10" y="{HEIGHT - 12}">{caption}</text>')
+    body.append(f'<text x="10" y="{HEIGHT - 12}">{escape(caption)}</text>')
     title = "The last free throw someone took on my profile" if shot else "Waiting for the first free throw"
     return "".join([
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
@@ -439,12 +442,13 @@ def shoot() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Free throws on my profile.")
     parser.add_argument("command", nargs="?", choices=["shoot", "render"], help="what to do")
-    parser.add_argument("--demo", type=int, metavar="POWER", help="preview a shot at this power")
+    parser.add_argument("--demo", type=int, choices=range(1, len(SPEEDS) + 1), metavar="POWER",
+                        help="preview a shot at this power")
     parser.add_argument("--seed", type=int, default=1, help="which wobble to use with --demo")
     parser.add_argument("--out", default="dist", help="folder for --demo pictures")
     args = parser.parse_args()
 
-    if args.demo:
+    if args.demo is not None:
         shot = simulate(args.demo, args.seed)
         out = Path(args.out)
         out.mkdir(parents=True, exist_ok=True)

@@ -109,6 +109,38 @@ class SvgAndScoreboardTests(unittest.TestCase):
         self.assertNotIn("user1", many)
         self.assertLess(many.index("user6"), many.index("user2"))
 
+    def test_simulate_rejects_out_of_range_power(self) -> None:
+        for bad_power in (0, -1, -9, 11):
+            with self.assertRaises(ValueError):
+                freethrow.simulate(bad_power, 1)
+
+    def test_build_svg_escapes_xml_special_chars_in_caption(self) -> None:
+        svg = freethrow.build_svg(freethrow.THEMES["dark"], None, "alice & bob <7>")
+        root = ET.fromstring(svg)
+        self.assertIn("alice &amp; bob &lt;7&gt;", svg)
+        self.assertTrue(root.tag.endswith("svg"))
+
+    def test_main_demo_writes_svgs_and_rejects_invalid_power(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out_dir = Path(tmp) / "demo"
+            stdout = io.StringIO()
+            with mock.patch.object(sys, "argv", ["freethrow.py", "--demo", "7", "--seed", "2", "--out", str(out_dir)]), \
+                 contextlib.redirect_stdout(stdout):
+                freethrow.main()
+
+            for name in ("dark", "light"):
+                svg_path = out_dir / f"shot-demo-{name}.svg"
+                self.assertTrue(svg_path.exists())
+                ET.fromstring(svg_path.read_text(encoding="utf-8"))
+            self.assertIn("power 7:", stdout.getvalue())
+
+            for bad in ("0", "-1", "11"):
+                with mock.patch.object(sys, "argv", ["freethrow.py", "--demo", bad, "--out", str(out_dir)]), \
+                     contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit) as ctx:
+                        freethrow.main()
+                    self.assertNotEqual(ctx.exception.code, 0)
+
 
 class ShootFlowTests(unittest.TestCase):
     def setUp(self) -> None:

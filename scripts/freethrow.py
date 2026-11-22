@@ -362,6 +362,13 @@ def draw(data: dict) -> None:
             build_svg(theme, shot, caption_for(last)), encoding="utf-8")
 
 
+def profile_url(shooter: str) -> str:
+    # bots have no profile at github.com/name[bot], their page lives under /apps/
+    if shooter.endswith("[bot]"):
+        return f"https://github.com/apps/{shooter.removesuffix('[bot]')}"
+    return f"https://github.com/{shooter}"
+
+
 def scoreboard(data: dict) -> str:
     shots = data["shots"]
     n = len(shots)
@@ -377,7 +384,7 @@ def scoreboard(data: dict) -> str:
     makes = sum(1 for s in shots if RESULTS[s["result"]][0])
     swishes = sum(1 for s in shots if s["result"] == "swish")
     rows = "\n".join(
-        f"| [{s['shooter']}](https://github.com/{s['shooter']}) | {s['power']} | {RESULTS[s['result']][1]} |"
+        f"| [{s['shooter']}]({profile_url(s['shooter'])}) | {s['power']} | {RESULTS[s['result']][1]} |"
         for s in reversed(shots[-5:]))
     total = f"{makes} made out of {n} {'shot' if n == 1 else 'shots'} so far"
     if swishes:

@@ -109,6 +109,13 @@ class SvgAndScoreboardTests(unittest.TestCase):
         self.assertNotIn("user1", many)
         self.assertLess(many.index("user6"), many.index("user2"))
 
+    def test_scoreboard_links_bots_to_their_app_page(self) -> None:
+        board = freethrow.scoreboard({
+            "shots": [{"issue": 1, "shooter": "dependabot[bot]", "power": 7, "result": "swish",
+                       "at": "2026-10-25T00:00:00Z"}]
+        })
+        self.assertIn("| [dependabot[bot]](https://github.com/apps/dependabot) | 7 | swish |", board)
+
     def test_simulate_rejects_out_of_range_power(self) -> None:
         for bad_power in (0, -1, -9, 11):
             with self.assertRaises(ValueError):

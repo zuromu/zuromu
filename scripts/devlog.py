@@ -44,10 +44,13 @@ query($owner: String!, $name: String!, $expr: String!) {
 """
 
 FIRST_COMMIT_QUERY = """
-query($owner: String!, $name: String!, $path: String!) {
+query($owner: String!, $name: String!, $path: String!, $after: String) {
   repository(owner: $owner, name: $name) {
     defaultBranchRef { target { ... on Commit {
-      history(first: 100, path: $path) { nodes { committedDate } }
+      history(first: 100, path: $path, after: $after) {
+        nodes { committedDate }
+        pageInfo { hasNextPage endCursor }
+      }
     } } }
   }
 }
@@ -59,6 +62,19 @@ def title_of(text: str, filename: str) -> str:
         if line.startswith("# "):
             return line[2:].strip()
     return filename.removesuffix(".md").replace("-", " ")
+
+
+def commit_dates(repo: str, path: str, token: str) -> list[str]:
+    """Every commit date for a file. History comes newest first, 100 at a time, so read all pages."""
+    dates, after = [], None
+    while True:
+        data = graphql(FIRST_COMMIT_QUERY, {"owner": USERNAME, "name": repo, "path": path, "after": after}, token)
+        history = data["repository"]["defaultBranchRef"]["target"]["history"]
+        dates += [n["committedDate"] for n in history["nodes"]]
+        page = history.get("pageInfo") or {}
+        if not page.get("hasNextPage"):
+            return dates
+        after = page["endCursor"]
 
 
 def fetch_posts(token: str) -> list[dict]:
@@ -74,9 +90,7 @@ def fetch_posts(token: str) -> list[dict]:
             if not entry["name"].endswith(".md") or not entry["object"]:
                 continue
             path = f"{folder}/{entry['name']}"
-            history = graphql(FIRST_COMMIT_QUERY, {"owner": USERNAME, "name": repo, "path": path}, token)
-            dates = [n["committedDate"]
-                     for n in history["repository"]["defaultBranchRef"]["target"]["history"]["nodes"]]
+            dates = commit_dates(repo, path, token)
             posts.append({
                 "title": title_of(entry["object"]["text"], entry["name"]),
                 "url": f"{repository['url']}/blob/{branch}/{path}",

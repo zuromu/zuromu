@@ -70,6 +70,23 @@ class GraphqlTests(unittest.TestCase):
         self.assertEqual(ctx.exception.code, 504)
         self.assertEqual(sleep_mock.call_args_list, [mock.call(5), mock.call(10)])
 
+    def test_retries_network_errors_then_succeeds(self) -> None:
+        calls = [urllib.error.URLError("connection reset"), TimeoutError("timed out"),
+                 FakeResponse({"data": {"n": 3}})]
+        with mock.patch("urllib.request.urlopen", side_effect=calls), \
+             mock.patch("time.sleep") as sleep_mock:
+            result = github_api.graphql("q", {}, "tok")
+
+        self.assertEqual(result, {"n": 3})
+        self.assertEqual(sleep_mock.call_args_list, [mock.call(5), mock.call(10)])
+
+    def test_raises_network_error_after_exhausting_retries(self) -> None:
+        calls = [urllib.error.URLError("down")] * 3
+        with mock.patch("urllib.request.urlopen", side_effect=calls), \
+             mock.patch("time.sleep"):
+            with self.assertRaises(urllib.error.URLError):
+                github_api.graphql("q", {}, "tok")
+
     def test_does_not_retry_client_errors(self) -> None:
         with mock.patch("urllib.request.urlopen", side_effect=self.http_error(403)), \
              mock.patch("time.sleep") as sleep_mock:

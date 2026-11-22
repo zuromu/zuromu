@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import contextlib
 import io
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -110,6 +112,29 @@ class DevlogIoTests(unittest.TestCase):
             "date": "2026-10-25T10:00:00Z",
         }])
 
+    def test_fetch_posts_reads_every_page_of_history(self) -> None:
+        def history_page(dates: list[str], next_cursor: str | None) -> dict:
+            return {"repository": {"defaultBranchRef": {"target": {"history": {
+                "nodes": [{"committedDate": d} for d in dates],
+                "pageInfo": {"hasNextPage": next_cursor is not None, "endCursor": next_cursor},
+            }}}}}
+
+        responses = [
+            {"repository": {
+                "url": "https://github.com/zuromu/swish-rl",
+                "defaultBranchRef": {"name": "main"},
+                "object": {"entries": [{"name": "m1.md", "object": {"text": "# M1\n"}}]},
+            }},
+            history_page(["2026-11-20T10:00:00Z"], "cursor-1"),
+            history_page(["2026-10-25T10:00:00Z"], None),
+        ]
+
+        with mock.patch.object(devlog, "graphql", side_effect=responses) as fake:
+            posts = devlog.fetch_posts("tok")
+
+        self.assertEqual(posts[0]["date"], "2026-10-25T10:00:00Z")
+        self.assertEqual(fake.call_args_list[2].args[1]["after"], "cursor-1")
+
     def test_fetch_posts_skips_private_or_missing_repo(self) -> None:
         class FakeResponse:
             def __init__(self, payload: dict) -> None:
@@ -165,6 +190,54 @@ class DevlogIoTests(unittest.TestCase):
         self.assertEqual(len(posts), 1)
         self.assertEqual(posts[0]["repo"], "swish-rl")
         self.assertEqual(posts[0]["title"], "M1: Physics")
+
+
+class DevlogMainTests(unittest.TestCase):
+    def test_main_demo_prints_list_and_leaves_readme_alone(self) -> None:
+        stdout = io.StringIO()
+        with mock.patch.object(sys, "argv", ["devlog.py", "--demo"]), \
+             mock.patch.object(devlog, "update_readme") as update_mock, \
+             contextlib.redirect_stdout(stdout):
+            devlog.main()
+
+        update_mock.assert_not_called()
+        lines = stdout.getvalue().splitlines()
+        self.assertEqual(len(lines), 2)
+        self.assertTrue(lines[0].startswith("- [M2: Court, hoop and shooting]"))
+
+    def test_main_requires_token(self) -> None:
+        env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
+        with mock.patch.dict(os.environ, env, clear=True), \
+             mock.patch.object(sys, "argv", ["devlog.py"]):
+            with self.assertRaises(SystemExit) as ctx:
+                devlog.main()
+        self.assertIn("GITHUB_TOKEN", str(ctx.exception))
+
+    def test_main_fetches_writes_readme_and_reports(self) -> None:
+        posts = [{"title": "M1", "url": "https://example.com/1", "repo": "swish-rl",
+                  "date": "2026-10-25T10:00:00Z"}]
+        with tempfile.TemporaryDirectory() as tmp:
+            readme = Path(tmp) / "README.md"
+            readme.write_text(f"intro\n{devlog.START}\nold\n{devlog.END}\noutro\n", encoding="utf-8")
+            outputs = []
+            for _ in range(2):  # the second run changes nothing
+                stdout = io.StringIO()
+                with mock.patch.dict(os.environ, {"GITHUB_TOKEN": "tok"}), \
+                     mock.patch.object(sys, "argv", ["devlog.py"]), \
+                     mock.patch.object(devlog, "README", readme), \
+                     mock.patch.object(devlog, "fetch_posts", return_value=posts) as fetch_mock, \
+                     contextlib.redirect_stdout(stdout):
+                    devlog.main()
+                fetch_mock.assert_called_once_with("tok")
+                outputs.append(stdout.getvalue())
+
+            text = readme.read_text(encoding="utf-8")
+
+        self.assertIn("- [M1](https://example.com/1) in swish-rl, Oct 25, 2026", text)
+        self.assertNotIn("old", text)
+        self.assertTrue(text.startswith("intro\n") and text.endswith("outro\n"))
+        self.assertEqual(outputs[0], "found 1 devlog posts, README updated\n")
+        self.assertEqual(outputs[1], "found 1 devlog posts, README already up to date\n")
 
 
 if __name__ == "__main__":

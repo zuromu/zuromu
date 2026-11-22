@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import contextlib
 import io
 import json
+import os
 import sys
+import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 from datetime import date
@@ -285,6 +288,41 @@ class FetchStatsTests(unittest.TestCase):
         self.assertEqual(stats["commits"], 1)
         self.assertEqual(stats["additions"], 40)
         self.assertEqual(stats["deletions"], 10)
+
+
+class MainTests(unittest.TestCase):
+    def run_main(self, argv: list[str], **env: str) -> str:
+        stdout = io.StringIO()
+        with mock.patch.dict(os.environ, env), \
+             mock.patch.object(sys, "argv", ["neofetch.py", *argv]), \
+             mock.patch.object(neofetch, "FRAMES", 2), \
+             contextlib.redirect_stdout(stdout):
+            neofetch.main()
+        return stdout.getvalue()
+
+    def test_demo_and_placeholder_write_both_themes(self) -> None:
+        for flag, expected in (("--demo", "(274 commits, 4 stars)"), ("--placeholder", "a placeholder card")):
+            with tempfile.TemporaryDirectory() as tmp:
+                out = self.run_main([flag, "--out", str(Path(tmp) / "out")])
+                self.assertIn(expected, out)
+                for name in neofetch.THEMES:
+                    svg = (Path(tmp) / "out" / f"neofetch-{name}.svg").read_text(encoding="utf-8")
+                    ET.fromstring(svg)
+
+    def test_requires_token_and_fetches_when_present(self) -> None:
+        env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
+        with mock.patch.dict(os.environ, env, clear=True), \
+             mock.patch.object(sys, "argv", ["neofetch.py"]):
+            with self.assertRaises(SystemExit) as ctx:
+                neofetch.main()
+        self.assertIn("GITHUB_TOKEN", str(ctx.exception))
+
+        with tempfile.TemporaryDirectory() as tmp, \
+             mock.patch.object(neofetch, "fetch_stats", return_value=neofetch.DEMO_STATS) as fetch_mock:
+            out = self.run_main(["--out", tmp], GITHUB_TOKEN="tok")
+            self.assertTrue((Path(tmp) / "neofetch-dark.svg").exists())
+        fetch_mock.assert_called_once_with("tok")
+        self.assertIn("drew the card into", out)
 
 
 if __name__ == "__main__":

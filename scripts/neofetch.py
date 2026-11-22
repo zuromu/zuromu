@@ -206,7 +206,10 @@ def fetch_stats(token: str) -> dict:
     contributed = [r["nameWithOwner"] for r in user["repositoriesContributedTo"]["nodes"]]
 
     # the last project I pushed to, skipping this profile repo (the workflow pushes here every night)
-    last_push = next((r for r in user["recent"]["nodes"] if r["name"].lower() != USERNAME.lower()), None)
+    last_push = next(
+        (r for r in user["recent"]["nodes"] if r and r["name"].lower() != USERNAME.lower() and r.get("pushedAt")),
+        None,
+    )
 
     # commits and lines of code on the default branch of every repo I own or
     # helped with. counts everything (lock files too), so it's a vanity number
@@ -216,7 +219,8 @@ def fetch_stats(token: str) -> dict:
         after = None
         while True:
             data = graphql(HISTORY_QUERY, {"owner": owner, "name": name,
-                                           "author": user["id"], "after": after}, token)
+                                           "author": user["id"], "after": after},
+                           token, allow_not_found=True)
             repo = data["repository"]
             if repo is None or repo["defaultBranchRef"] is None:  # gone, private, or empty
                 break
@@ -295,11 +299,16 @@ def section(title: str) -> list[tuple[str, str]]:
     return [("- ", "d"), (title, "w"), (" " + "-" * (LINE_CHARS - len(title) - 3), "d")]
 
 
-def last_push_text(push: dict | None) -> str:
-    if not push:
+def last_push_text(push: dict | None, max_len: int = LINE_CHARS - len("Last Push") - 5) -> str:
+    if not push or not push.get("pushedAt"):
         return "-"
     when = datetime.fromisoformat(push["pushedAt"].replace("Z", "+00:00")).astimezone(ZoneInfo(TIMEZONE))
-    return f"{push['name']}, {when:%b} {when.day}"
+    suffix = f", {when:%b} {when.day}"
+    name = push["name"]
+    if len(name) + len(suffix) > max_len:
+        keep = max(max_len - len(suffix) - 3, 1)
+        name = name[:keep] + "..."
+    return f"{name}{suffix}"
 
 
 def card_lines(stats: dict, today: date) -> list[list[tuple[str, str]] | str]:

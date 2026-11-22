@@ -29,6 +29,12 @@ def graphql(query: str, variables: dict, token: str, *, allow_not_found: bool = 
                 time.sleep(5 * (attempt + 1))
                 continue
             raise
+        except OSError:
+            # timeouts and dropped connections (URLError is an OSError too)
+            if attempt < 2:
+                time.sleep(5 * (attempt + 1))
+                continue
+            raise
     errors = data.get("errors")
     if errors:
         # GitHub puts NOT_FOUND in errors alongside null data for private or missing repos

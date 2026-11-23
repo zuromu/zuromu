@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import http.client
 import io
 import json
 import sys
@@ -79,6 +80,16 @@ class GraphqlTests(unittest.TestCase):
 
         self.assertEqual(result, {"n": 3})
         self.assertEqual(sleep_mock.call_args_list, [mock.call(5), mock.call(10)])
+
+    def test_retries_response_cut_off_halfway_then_succeeds(self) -> None:
+        cut_off = FakeResponse({})
+        cut_off.read = mock.Mock(side_effect=http.client.IncompleteRead(b'{"da', 20))
+        with mock.patch("urllib.request.urlopen", side_effect=[cut_off, FakeResponse({"data": {"n": 3}})]), \
+             mock.patch("time.sleep") as sleep_mock:
+            result = github_api.graphql("q", {}, "tok")
+
+        self.assertEqual(result, {"n": 3})
+        self.assertEqual(sleep_mock.call_args_list, [mock.call(5)])
 
     def test_raises_network_error_after_exhausting_retries(self) -> None:
         calls = [urllib.error.URLError("down")] * 3

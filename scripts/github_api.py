@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import time
 import urllib.error
@@ -29,8 +30,9 @@ def graphql(query: str, variables: dict, token: str, *, allow_not_found: bool = 
                 time.sleep(5 * (attempt + 1))
                 continue
             raise
-        except OSError:
-            # timeouts and dropped connections (URLError is an OSError too)
+        except (OSError, http.client.IncompleteRead):
+            # timeouts and dropped connections (URLError is an OSError too,
+            # IncompleteRead is a response that got cut off halfway and isn't)
             if attempt < 2:
                 time.sleep(5 * (attempt + 1))
                 continue

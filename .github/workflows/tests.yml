@@ -1,0 +1,27 @@
+name: tests
+
+# Runs the script tests on every pull request, so a broken script shows up on
+# the PR instead of in the next profile refresh on main.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Check the scripts compile
+        run: python3 -m compileall -q scripts
+
+      - name: Run the script tests
+        run: python3 -m unittest discover -s tests

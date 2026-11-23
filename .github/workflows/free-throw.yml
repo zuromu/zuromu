@@ -69,3 +69,4 @@ jobs:
         run: |
           gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" \
             --body "That shot did not go through. Open a new issue and try again."
+          gh issue close "$ISSUE" --repo "$GITHUB_REPOSITORY"

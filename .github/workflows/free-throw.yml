@@ -25,6 +25,7 @@ jobs:
           python-version: "3.12"
 
       - name: Take the shot and push the scoreboard
+        id: shot
         env:
           # the title is typed by whoever opened the issue, so it only ever goes in
           # through an env var, and the script checks it's exactly "shoot <1 to 10>"
@@ -62,7 +63,9 @@ jobs:
           gh issue close "$ISSUE" --repo "$GITHUB_REPOSITORY"
 
       - name: Say so if the shot did not go through
-        if: failure()
+        # only for titles the script treats as a shot, and not if the shot was
+        # already counted and just the reply failed
+        if: failure() && steps.shot.outcome != 'success' && (github.event.issue.title == 'shoot' || startsWith(github.event.issue.title, 'shoot '))
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ github.event.issue.number }}

@@ -41,7 +41,8 @@ jobs:
           # identical because the wobble is seeded with the issue number
           done=0
           for attempt in 1 2 3 4 5; do
-            git fetch -q origin main
+            # GitHub can be out of reach for a moment, that gets another try too
+            if ! git fetch -q origin main; then sleep $((attempt * 3)); continue; fi
             git reset -q --hard origin/main
             python3 scripts/freethrow.py shoot
             git add -A data dist README.md

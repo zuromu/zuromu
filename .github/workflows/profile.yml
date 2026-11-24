@@ -90,11 +90,11 @@ jobs:
             exit 0
           fi
           git commit -m "chore: refresh profile"
-          # a free throw may push while this runs, so rebase onto the newest main and retry
+          # a free throw may push while this runs, so rebase onto the newest main and retry.
+          # GitHub can also be out of reach for a moment, so a failed pull gets another try too
           pushed=0
           for attempt in 1 2 3; do
-            git pull -q --rebase origin main
-            if git push -q origin HEAD:main; then pushed=1; break; fi
+            if git pull -q --rebase origin main && git push -q origin HEAD:main; then pushed=1; break; fi
             sleep $((attempt * 3))
           done
           test "$pushed" = 1

@@ -69,7 +69,8 @@ jobs:
 
       - name: Draw the 3D city
         continue-on-error: true
-        uses: yoshi389111/github-profile-3d-contrib@v0.9.3
+        # a tag can be moved to other code later and this job can push here, so use the exact commit
+        uses: yoshi389111/github-profile-3d-contrib@7d95e7d4cdc028dd1e1cbd957d65f35efb12ae39 # v0.9.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USERNAME: ${{ github.repository_owner }}
